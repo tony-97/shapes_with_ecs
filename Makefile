@@ -9,10 +9,16 @@ BUILD_DIR  := $(BUILD_NAME)
 
 ifndef MSVC
     CPPFLAGS += -I ./external/raylib/src/ -I ./external/oop-ecs/src -I ./external/oop-ecs/external/
-	CXXFLAGS += -std=c++20
+    CXXFLAGS += -std=c++20
     RELEASE_FLAGS += -flto
-    LDFLAGS += -L ./libs/raylib/$(BUILD_NAME)/release -flto
+    LDFLAGS += -L ./libs/raylib/$(BUILD_NAME)/debug -flto
     LDLIBS += -lraylib
+endif
+ifdef EMSCRIPTEN
+    CXXFLAGS += -fexperimental-library
+endif
+ifdef GCC
+    LDLIBS += -ltbb
 endif
 
 # Compilation flags
@@ -20,9 +26,10 @@ ifeq ($(TARGET),WEB)
     AR  := emar
     CC  := emcc
     CXX := em++
-    LDLIBS   += 
-    LDFLAGS  += 
-    DEBUG_FLAGS   += 
+    EXEC_NAME := app.html
+    LDLIBS   += -sUSE_GLFW=3
+    LDFLAGS  += -sASSERTIONS=2
+    DEBUG_FLAGS   += -O0 -g -ggdb --profiling 
     RELEASE_FLAGS += 
     WFLAGS   += 
     CPPFLAGS += 
@@ -64,7 +71,7 @@ endif
 endif
 ifeq ($(TARGET),LINUX)
     LDLIBS   += 
-    LDFLAGS  += -ltbb
+    LDFLAGS  += 
     DEBUG_FLAGS   += -g -ggdb -O0
     RELEASE_FLAGS += -march=native -Ofast -s -DNDEBUG
     WFLAGS   += 

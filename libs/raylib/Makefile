@@ -27,7 +27,7 @@ ifeq ($(TARGET),WEB)
     DEBUG_FLAGS   += -O0 -sASSERTIONS=1 --profiling
     RELEASE_FLAGS += -O3 -flto
     WFLAGS   += -Wno-unused-command-line-argument
-    CFLAGS   += -std=gnu99 -flto --closure 2 -sMODULARIZE
+    CFLAGS   += -std=gnu99 --closure 2 -sMODULARIZE
 endif
 ifeq ($(TARGET),ANDROID)
 	ANDROID_ARCH ?= arm64
