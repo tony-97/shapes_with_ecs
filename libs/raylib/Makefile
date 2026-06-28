@@ -36,8 +36,6 @@ ifndef MSVC
     LDFLAGS += -flto
 endif
 
-BACKEND ?= PLATFORM_DESKTOP_GLFW
-
 RAYLIB_VERSION     := 6.0.0
 RAYLIB_API_VERSION := 600
 
@@ -59,6 +57,9 @@ endif
 
 DEFINES += $(BACKEND) $(GRAPHICS)
 
+X11 = 1
+WAYLAND = 0
+
 #==============================================================================
 # System library dependencies
 #==============================================================================
@@ -69,12 +70,14 @@ endif
 # Desktop backends — common system libs
 ifneq ($(filter PLATFORM_DESKTOP_GLFW PLATFORM_DESKTOP_SDL PLATFORM_DESKTOP_RGFW,$(BACKEND)),)
     ifeq ($(TARGET),WINDOWS)
+    ifndef MSVC
         LDLIBS += -static-libgcc -lopengl32 -lgdi32 -lwinmm
+    endif
     endif
     ifeq ($(TARGET),LINUX)
         # NOTE: Required packages: libegl1-mesa-dev
         LDLIBS += -lGL -lpthread -ldl -lrt
-        ifdef X11
+        ifeq ($(X11),1)
             DEFINES += _GLFW_X11
             LDLIBS  += -lX11
         endif
@@ -88,7 +91,7 @@ endif
 ifeq ($(BACKEND),PLATFORM_DESKTOP_GLFW)
     ifneq ($(filter LINUX WINDOWS OSX,$(TARGET)),)
         ifeq ($(TARGET),LINUX)
-            ifdef WAYLAND
+            ifdef ($(WAYLAND),1)
                 LDFLAGS += $(shell pkg-config wayland-client wayland-cursor wayland-egl xkbcommon --libs)
 
                 WL_PROTOCOLS_DIR := external/glfw/deps/wayland
@@ -168,7 +171,7 @@ ifndef MSVC
 endif
 
 # GLFW include path (build-only — consumers use ./external/raylib/src/)
-ifeq ($(filter PLATFORM_DESKTOP_GLFW PLATFORM_WEB,$(BACKEND)),)
+ifneq ($(filter PLATFORM_DESKTOP_GLFW PLATFORM_WEB,$(BACKEND)),)
     INCLUDE_DIRS += $(SRC_DIR)/external/glfw/include
 endif
 
